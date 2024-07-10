@@ -6,4 +6,10 @@ class Routes {
     name: '/home',
     path: '/home',
   );
+
+  // 버스 추가 페이지
+  static const RouteInfo addBus = RouteInfo(
+    name: '/home/addBus',
+    path: 'addBus',
+  );
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:more_sleep/routes/routes.dart';
+import 'package:more_sleep/ui/add_bus/add_bus_view.dart';
 import 'package:more_sleep/ui/home/home_view.dart';
 
 final Provider<AppRouter> appRouterProvider =
@@ -21,13 +22,22 @@ class AppRouter {
         const Scaffold(),
     routes: <RouteBase>[
       GoRoute(
-        path: Routes.home.path,
-        name: Routes.home.name,
-        pageBuilder: (BuildContext context, GoRouterState state) =>
-            const NoTransitionPage(
-          child: HomeView(),
-        ),
-      ),
+          path: Routes.home.path,
+          name: Routes.home.name,
+          pageBuilder: (BuildContext context, GoRouterState state) =>
+              const NoTransitionPage(
+                child: HomeView(),
+              ),
+          routes: <RouteBase>[
+            GoRoute(
+              path: Routes.addBus.path,
+              name: Routes.addBus.name,
+              pageBuilder: (BuildContext context, GoRouterState state) =>
+                  const NoTransitionPage(
+                child: AddBusView(),
+              ),
+            ),
+          ]),
     ],
   );
 
