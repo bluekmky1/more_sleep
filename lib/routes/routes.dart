@@ -1,4 +1,4 @@
-import 'package:more_sleep/routes/route_info.dart';
+import 'route_info.dart';
 
 class Routes {
   // 홈(메인)페이지
