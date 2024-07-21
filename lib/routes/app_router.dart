@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../ui/add_bus/add_bus_view.dart';
+import '../ui/add_alarm/add_alarm_view.dart';
 import '../ui/home/home_view.dart';
 import 'routes.dart';
 
@@ -30,11 +30,11 @@ class AppRouter {
               ),
           routes: <RouteBase>[
             GoRoute(
-              path: Routes.addBus.path,
-              name: Routes.addBus.name,
+              path: Routes.addAlarm.path,
+              name: Routes.addAlarm.name,
               pageBuilder: (BuildContext context, GoRouterState state) =>
                   const NoTransitionPage<dynamic>(
-                child: AddBusView(),
+                child: AddAlarmView(),
               ),
             ),
           ]),

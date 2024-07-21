@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
-final Provider<Dio> dioServiceProvider = Provider<Dio>(
+final Provider<Dio> busApiServiceProvider = Provider<Dio>(
   (Ref ref) => DioClient.dio
     ..interceptors.addAll(<Interceptor>[
       if (kDebugMode)
@@ -15,7 +15,7 @@ final Provider<Dio> dioServiceProvider = Provider<Dio>(
 );
 
 class DioClient {
-  static const String baseUrl = 'http://apis.data.go.kr/1613000/';
+  static const String baseUrl = 'https://apis.data.go.kr/1613000/';
 
   factory DioClient() => DioClient._();
   DioClient._();

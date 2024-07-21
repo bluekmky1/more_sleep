@@ -7,9 +7,9 @@ class Routes {
     path: '/home',
   );
 
-  // 버스 추가 페이지
-  static const RouteInfo addBus = RouteInfo(
-    name: '/home/addBus',
-    path: 'addBus',
+  // 알람 추가 페이지
+  static const RouteInfo addAlarm = RouteInfo(
+    name: '/home/add-alarm',
+    path: 'add-alarm',
   );
 }
