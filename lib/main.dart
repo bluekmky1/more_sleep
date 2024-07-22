@@ -48,6 +48,9 @@ class _MyAppState extends ConsumerState<MyApp> {
             scrolledUnderElevation: 0,
             backgroundColor: ColorPalette.darkBlue300,
           ),
+          textSelectionTheme: const TextSelectionThemeData(
+            cursorColor: Colors.white,
+          ),
         ),
       );
 }

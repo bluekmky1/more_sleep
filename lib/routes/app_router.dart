@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../ui/add_alarm/add_alarm_view.dart';
 import '../ui/home/home_view.dart';
 import 'routes.dart';
 
@@ -22,22 +21,13 @@ class AppRouter {
         const Scaffold(),
     routes: <RouteBase>[
       GoRoute(
-          path: Routes.home.path,
-          name: Routes.home.name,
-          pageBuilder: (BuildContext context, GoRouterState state) =>
-              const NoTransitionPage<dynamic>(
-                child: HomeView(),
-              ),
-          routes: <RouteBase>[
-            GoRoute(
-              path: Routes.addAlarm.path,
-              name: Routes.addAlarm.name,
-              pageBuilder: (BuildContext context, GoRouterState state) =>
-                  const NoTransitionPage<dynamic>(
-                child: AddAlarmView(),
-              ),
-            ),
-          ]),
+        path: Routes.home.path,
+        name: Routes.home.name,
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            const NoTransitionPage<dynamic>(
+          child: HomeView(),
+        ),
+      ),
     ],
   );
 
