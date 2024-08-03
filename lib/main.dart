@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:workmanager/workmanager.dart';
+import 'env/env.dart';
 import 'routes/app_router.dart';
 import 'theme/color_palette.dart';
 
@@ -12,7 +16,7 @@ void callbackDispatcher() {
           Future<bool>.value(true));
 }
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // await Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
@@ -24,6 +28,11 @@ void main() async {
   const InitializationSettings initializationSettings =
       InitializationSettings(android: initializationSettingsAndroid);
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+  await Supabase.initialize(
+    url: 'https://dnqgzcinhivjlehmcsqr.supabase.co',
+    anonKey: Env.supabaseAnonKey,
+  );
 
   runApp(const ProviderScope(child: MyApp()));
 }

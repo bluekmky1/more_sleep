@@ -5,4 +5,7 @@ part 'generated/env.g.dart';
 abstract class Env {
   @EnviedField(varName: 'OPEN_DATA_PORTAL_SERVICE_KEY')
   static final String openDataPortalServiceKey = _Env.openDataPortalServiceKey;
+
+  @EnviedField(varName: 'SUPABASE_ANON_KEY')
+  static final String supabaseAnonKey = _Env.supabaseAnonKey;
 }
