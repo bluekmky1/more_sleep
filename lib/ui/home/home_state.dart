@@ -1,46 +1,24 @@
 import 'package:equatable/equatable.dart';
 import '../../../core/loading_status.dart';
-import '../../domain/bus_stop/model/bus_stop_model.dart';
 
 class HomeState extends Equatable {
-  final LoadingStatus getExpectedBusArrivalInfoloadingStatus;
-  final LoadingStatus getBusStopList;
-  final List<BusStopModel> busStopList;
-  final String keyword;
+  final LoadingStatus loadingStatus;
 
   const HomeState({
-    required this.getExpectedBusArrivalInfoloadingStatus,
-    required this.getBusStopList,
-    required this.busStopList,
-    required this.keyword,
+    required this.loadingStatus,
   });
 
-  HomeState.init()
-      : getExpectedBusArrivalInfoloadingStatus = LoadingStatus.none,
-        getBusStopList = LoadingStatus.none,
-        busStopList = <BusStopModel>[],
-        keyword = '';
+  const HomeState.init() : loadingStatus = LoadingStatus.none;
 
   HomeState copyWith({
-    LoadingStatus? getExpectedBusArrivalInfoloadingStatus,
-    LoadingStatus? getBusStopList,
-    List<BusStopModel>? busStopList,
-    String? keyword,
+    LoadingStatus? loadingStatus,
   }) =>
       HomeState(
-        getExpectedBusArrivalInfoloadingStatus:
-            getExpectedBusArrivalInfoloadingStatus ??
-                this.getExpectedBusArrivalInfoloadingStatus,
-        getBusStopList: getBusStopList ?? this.getBusStopList,
-        busStopList: busStopList ?? this.busStopList,
-        keyword: keyword ?? this.keyword,
+        loadingStatus: loadingStatus ?? this.loadingStatus,
       );
 
   @override
   List<Object> get props => <Object>[
-        getExpectedBusArrivalInfoloadingStatus,
-        getBusStopList,
-        busStopList,
-        keyword,
+        loadingStatus,
       ];
 }
