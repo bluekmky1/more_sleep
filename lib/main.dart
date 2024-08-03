@@ -1,33 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:workmanager/workmanager.dart';
 import 'env/env.dart';
 import 'routes/app_router.dart';
 import 'theme/color_palette.dart';
 
-@pragma('vm:entry-point')
-void callbackDispatcher() {
-  Workmanager().executeTask(
-      (String task, Map<String, dynamic>? inputData) async =>
-          Future<bool>.value(true));
-}
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // await Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
-
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-  const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
-  const InitializationSettings initializationSettings =
-      InitializationSettings(android: initializationSettingsAndroid);
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
   await Supabase.initialize(
     url: 'https://dnqgzcinhivjlehmcsqr.supabase.co',
