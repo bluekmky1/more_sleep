@@ -1,14 +1,18 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'env/env.dart';
 import 'routes/app_router.dart';
 import 'theme/color_palette.dart';
+import 'theme/color_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await NaverMapSdk.instance.initialize(clientId: 'jk38qcvkgl');
 
   await Supabase.initialize(
     url: 'https://dnqgzcinhivjlehmcsqr.supabase.co',
@@ -31,16 +35,18 @@ class _MyAppState extends ConsumerState<MyApp> {
         routerConfig: ref.watch(appRouterProvider).router,
         title: '좀만 더 잘래',
         theme: ThemeData(
+          scaffoldBackgroundColor: Colors.white,
           colorSchemeSeed: ColorPalette.lightBlue300,
           fontFamily: 'Pretendard',
           appBarTheme: const AppBarTheme(
             elevation: 0,
             scrolledUnderElevation: 0,
-            backgroundColor: ColorPalette.darkBlue300,
+            backgroundColor: ColorPalette.white,
           ),
-          textSelectionTheme: const TextSelectionThemeData(
-            cursorColor: Colors.white,
-          ),
+          splashColor: ColorPalette.lightGray200,
+          extensions: const <ThemeExtension<dynamic>>[
+            ColorTheme.light,
+          ],
         ),
       );
 }
