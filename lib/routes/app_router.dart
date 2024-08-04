@@ -21,13 +21,12 @@ class AppRouter {
         const Scaffold(),
     routes: <RouteBase>[
       GoRoute(
-        path: Routes.home.path,
-        name: Routes.home.name,
-        pageBuilder: (BuildContext context, GoRouterState state) =>
-            const NoTransitionPage<dynamic>(
-          child: HomeView(),
-        ),
-      ),
+          path: Routes.home.path,
+          name: Routes.home.name,
+          pageBuilder: (BuildContext context, GoRouterState state) =>
+              const NoTransitionPage<dynamic>(
+                child: HomeView(),
+              )),
     ],
   );
 
