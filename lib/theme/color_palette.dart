@@ -58,6 +58,7 @@ class ColorPalette {
   // Blue
   static const Color lightBlue200 = Color(0xFFCAE8FF);
   static const Color lightBlue300 = Color(0xFF067DFD);
+  static const Color lightBlue400 = Color.fromARGB(255, 4, 69, 140);
 
   static const Color darkBlue200 = Color(0xFF182D45);
   static const Color darkBlue300 = Color(0xFF2C78CA);
