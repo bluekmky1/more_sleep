@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/loading_status.dart';
 import '../../domain/bus_stop/model/bus_stop_model.dart';
+import '../../theme/color_palette.dart';
 import '../../theme/color_theme.dart';
 import 'home_state.dart';
 import 'home_view_model.dart';
@@ -21,10 +24,12 @@ class _HomeViewState extends ConsumerState<HomeView> {
   Timer? _debounce;
   final SearchController _searchController = SearchController();
   bool onTaped = false;
+  final GlobalKey<State<StatefulWidget>> _sheet = GlobalKey();
+  final DraggableScrollableController _dragController =
+      DraggableScrollableController();
 
   @override
   void dispose() {
-    // TODO: implement dispose
     _debounce?.cancel();
     super.dispose();
   }
@@ -40,18 +45,6 @@ class _HomeViewState extends ConsumerState<HomeView> {
           child: Stack(
             children: <Widget>[
               const NaverMap(),
-              Positioned(
-                  bottom: 8,
-                  right: 8,
-                  child: SizedBox(
-                    width: 50,
-                    height: 50,
-                    child: IconButton.filled(
-                        onPressed: () {},
-                        icon: const Icon(
-                          Icons.gps_fixed,
-                        )),
-                  )),
               Padding(
                 padding: const EdgeInsets.symmetric(
                   vertical: 8,
@@ -67,6 +60,21 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     children: <Widget>[
                       Expanded(
                         child: GestureDetector(
+                          onTapDown: (_) {
+                            setState(() {
+                              onTaped = true;
+                            });
+                          },
+                          onTapUp: (_) {
+                            setState(() {
+                              onTaped = false;
+                            });
+                          },
+                          onTapCancel: () {
+                            setState(() {
+                              onTaped = false;
+                            });
+                          },
                           onTap: () {
                             controller.openView();
                           },
@@ -170,6 +178,100 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   suggestionsBuilder: (_, __) => <Widget>[],
                 ),
               ),
+              Positioned(
+                top: 65,
+                right: 0,
+                left: 0,
+                child: SizedBox(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      TextButton(
+                        style: TextButton.styleFrom(
+                            overlayColor: colorTheme.surface300,
+                            elevation: 2,
+                            shadowColor: colorTheme.surface75,
+                            backgroundColor: colorTheme.backgroundElevated),
+                        onPressed: () {},
+                        child: const Text('현 위치에서 재검색'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 100,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    TextButton(
+                      style: TextButton.styleFrom(
+                          overlayColor: colorTheme.surface300,
+                          elevation: 2,
+                          shadowColor: colorTheme.surface75,
+                          backgroundColor: colorTheme.backgroundElevated),
+                      onPressed: () async {
+                        await _dragController.animateTo(0.6,
+                            duration: Durations.short2,
+                            curve: Curves.easeInOut);
+                      },
+                      child: const Text('버스 마커 클릭'),
+                    ),
+                  ],
+                ),
+              ),
+              DraggableScrollableSheet(
+                  key: _sheet,
+                  snap: true,
+                  minChildSize: 0,
+                  initialChildSize: 0,
+                  maxChildSize: 0.45,
+                  controller: _dragController,
+                  builder: (BuildContext context,
+                          ScrollController scrollController) =>
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                            color: colorTheme.background,
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(12),
+                              topRight: Radius.circular(12),
+                            )),
+                        child: CustomScrollView(
+                          controller: scrollController,
+                          slivers: <Widget>[
+                            const SliverAppBar(
+                              pinned: true,
+                              floating: true,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(12),
+                                  topRight: Radius.circular(12),
+                                ),
+                              ),
+                              collapsedHeight: 55,
+                              toolbarHeight: 50,
+                              stretch: true,
+                              title: Text('더 포레스트 힐'),
+                              bottom: PreferredSize(
+                                preferredSize: Size.fromHeight(40),
+                                child: Text('data'),
+                              ),
+                            ),
+                            const SliverToBoxAdapter(),
+                            SliverList.builder(
+                                itemCount: 10,
+                                itemBuilder:
+                                    (BuildContext context, int index) =>
+                                        Material(
+                                          child: ListTile(
+                                            tileColor: colorTheme.background,
+                                            onTap: () {},
+                                            title: Text('11-$index'),
+                                          ),
+                                        )),
+                          ],
+                        ),
+                      ))
             ],
           ),
         ));

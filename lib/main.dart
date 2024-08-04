@@ -35,7 +35,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         routerConfig: ref.watch(appRouterProvider).router,
         title: '좀만 더 잘래',
         theme: ThemeData(
-          scaffoldBackgroundColor: Colors.white,
+          scaffoldBackgroundColor: Colors.transparent,
           colorSchemeSeed: ColorPalette.lightBlue300,
           fontFamily: 'Pretendard',
           appBarTheme: const AppBarTheme(
