@@ -1,15 +1,14 @@
 import 'dart:async';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/src/rendering/sliver.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/loading_status.dart';
 import '../../domain/bus_stop/model/bus_stop_model.dart';
-import '../../theme/color_palette.dart';
+import '../../routes/routes.dart';
 import '../../theme/color_theme.dart';
+import '../../theme/typographies.dart';
+import '../common/const/assets.dart';
 import 'home_state.dart';
 import 'home_view_model.dart';
 
@@ -23,14 +22,16 @@ class HomeView extends ConsumerStatefulWidget {
 class _HomeViewState extends ConsumerState<HomeView> {
   Timer? _debounce;
   final SearchController _searchController = SearchController();
-  bool onTaped = false;
-  final GlobalKey<State<StatefulWidget>> _sheet = GlobalKey();
-  final DraggableScrollableController _dragController =
+  final DraggableScrollableController _draggableScrollableController =
       DraggableScrollableController();
+  late NaverMapController _mapController;
+
+  bool onTaped = false;
 
   @override
   void dispose() {
     _debounce?.cancel();
+    _draggableScrollableController.dispose();
     super.dispose();
   }
 
@@ -39,12 +40,49 @@ class _HomeViewState extends ConsumerState<HomeView> {
     final ColorTheme colorTheme = Theme.of(context).extension<ColorTheme>()!;
     final HomeState state = ref.watch(homeViewModelProvider);
     final HomeViewModel viewModel = ref.read(homeViewModelProvider.notifier);
+
+    NMarker busStopMarker({
+      required BusStopModel busStopModel,
+    }) =>
+        NMarker(
+          id: busStopModel.stopId,
+          position: NLatLng(
+            busStopModel.lat,
+            busStopModel.long,
+          ),
+          icon: const NOverlayImage.fromAssetImage(Assets.marker),
+          size: const Size.square(32),
+          anchor: const NPoint(0.5, 0.9),
+        )..setOnTapListener((NMarker nMarker) async {
+            await _draggableScrollableController.animateTo(
+              1,
+              duration: Durations.short4,
+              curve: Curves.easeInOut,
+            );
+          });
+
     return Scaffold(
         resizeToAvoidBottomInset: false,
         body: SafeArea(
           child: Stack(
             children: <Widget>[
-              const NaverMap(),
+              NaverMap(
+                onMapReady: (NaverMapController controller) {
+                  _mapController = controller;
+                  _mapController.addOverlay(
+                    busStopMarker(
+                      busStopModel: BusStopModel(
+                        stopId: 'asd',
+                        stopName: '더포레스트힐',
+                        cityCode: 12,
+                        cityName: '경기도 안양시',
+                        lat: 37.5664056,
+                        long: 126.9778222,
+                      ),
+                    ),
+                  );
+                },
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(
                   vertical: 8,
@@ -101,11 +139,21 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                     : colorTheme.backgroundElevated,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Row(
+                              child: Row(
                                 children: <Widget>[
-                                  Icon(Icons.directions_bus_outlined),
-                                  SizedBox(width: 12),
-                                  Text('정류장 검색'),
+                                  Icon(
+                                    Icons.directions_bus_outlined,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    '정류장 검색',
+                                    style: Typographies.bMedium16.copyWith(
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -152,8 +200,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   viewBuilder: (Iterable<Widget> suggestions) => Consumer(
                     builder: (_, WidgetRef ref, __) {
                       final List<BusStopModel> options = ref.watch(
-                        homeViewModelProvider
-                            .select((HomeState value) => value.busStopList),
+                        homeViewModelProvider.select(
+                            (HomeState value) => value.searchedBusStopList),
                       );
 
                       if (_searchController.text.isEmpty) {
@@ -199,79 +247,140 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   ),
                 ),
               ),
-              SizedBox(
-                height: 100,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    TextButton(
-                      style: TextButton.styleFrom(
-                          overlayColor: colorTheme.surface300,
-                          elevation: 2,
-                          shadowColor: colorTheme.surface75,
-                          backgroundColor: colorTheme.backgroundElevated),
-                      onPressed: () async {
-                        await _dragController.animateTo(0.6,
-                            duration: Durations.short2,
-                            curve: Curves.easeInOut);
-                      },
-                      child: const Text('버스 마커 클릭'),
-                    ),
-                  ],
+              Positioned(
+                bottom: 70,
+                right: 8,
+                child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: const <BoxShadow>[
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 4,
+                        ),
+                      ]),
+                  width: 50,
+                  height: 50,
+                  child: IconButton.filled(
+                    onPressed: () async {
+                      await _mapController
+                          .updateCamera(NCameraUpdate.withParams(
+                        bearing: 0,
+                      ));
+                    },
+                    icon: const Icon(Icons.explore_outlined),
+                  ),
                 ),
               ),
-              DraggableScrollableSheet(
-                  key: _sheet,
-                  snap: true,
-                  minChildSize: 0,
-                  initialChildSize: 0,
-                  maxChildSize: 0.45,
-                  controller: _dragController,
-                  builder: (BuildContext context,
-                          ScrollController scrollController) =>
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                            color: colorTheme.background,
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(12),
-                              topRight: Radius.circular(12),
-                            )),
-                        child: CustomScrollView(
-                          controller: scrollController,
-                          slivers: <Widget>[
-                            const SliverAppBar(
-                              pinned: true,
-                              floating: true,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(12),
-                                  topRight: Radius.circular(12),
-                                ),
-                              ),
-                              collapsedHeight: 55,
-                              toolbarHeight: 50,
-                              stretch: true,
-                              title: Text('더 포레스트 힐'),
-                              bottom: PreferredSize(
-                                preferredSize: Size.fromHeight(40),
-                                child: Text('data'),
+              Positioned(
+                bottom: 8,
+                right: 8,
+                child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: const <BoxShadow>[
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 4,
+                        ),
+                      ]),
+                  width: 50,
+                  height: 50,
+                  child: IconButton.filled(
+                    onPressed: () {},
+                    icon: const Icon(Icons.gps_fixed_outlined),
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  height: 150,
+                  child: DraggableScrollableSheet(
+                    minChildSize: 0,
+                    initialChildSize: 0,
+                    snap: true,
+                    controller: _draggableScrollableController,
+                    builder: (BuildContext context,
+                            ScrollController scrollController) =>
+                        Container(
+                      clipBehavior: Clip.hardEdge,
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(12),
+                        ),
+                        color: colorTheme.background,
+                      ),
+                      child: SingleChildScrollView(
+                        controller: scrollController,
+                        child: Column(
+                          children: <Widget>[
+                            Container(
+                              height: 50,
+                              color: Theme.of(context).colorScheme.primary,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              child: Row(
+                                children: <Widget>[
+                                  Expanded(
+                                      child: Text(
+                                    '더포레스트힐',
+                                    style: Typographies.hBold24.copyWith(
+                                      color: colorTheme.background,
+                                    ),
+                                  )),
+                                  CloseButton(
+                                    color: colorTheme.background,
+                                    onPressed: () async {
+                                      await _draggableScrollableController
+                                          .animateTo(
+                                        0,
+                                        duration: Durations.short4,
+                                        curve: Curves.easeInOut,
+                                      );
+                                    },
+                                    style: const ButtonStyle(
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SliverToBoxAdapter(),
-                            SliverList.builder(
-                                itemCount: 10,
-                                itemBuilder:
-                                    (BuildContext context, int index) =>
-                                        Material(
-                                          child: ListTile(
-                                            tileColor: colorTheme.background,
-                                            onTap: () {},
-                                            title: Text('11-$index'),
-                                          ),
-                                        )),
+                            SizedBox(
+                              height: 100,
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Row(
+                                  children: <Widget>[
+                                    Expanded(
+                                        child: TextButton(
+                                            onPressed: () {
+                                              context
+                                                  .goNamed(Routes.alarm.name);
+                                            },
+                                            child: const SizedBox(
+                                              height: 50,
+                                              child: Center(
+                                                child: Text(
+                                                  '알림 생성하기',
+                                                  style:
+                                                      Typographies.tSemiBold18,
+                                                ),
+                                              ),
+                                            )))
+                                  ],
+                                ),
+                              ),
+                            ),
                           ],
                         ),
-                      ))
+                      ),
+                    ),
+                  ),
+                ),
+              )
             ],
           ),
         ));

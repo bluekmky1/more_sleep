@@ -21,19 +21,22 @@ class HomeViewModel extends StateNotifier<HomeState> {
         super(state);
 
   Future<void> getBusStop({required String keyword}) async {
-    state = state.copyWith(loadingStatus: LoadingStatus.loading);
+    state = state.copyWith(
+      searchBusStopListLoadingStatus: LoadingStatus.loading,
+    );
+
     final UseCaseResult<List<BusStopModel>> result =
         await _getBusStopListUseCase(keyword: keyword);
     switch (result) {
       case SuccessUseCaseResult<List<BusStopModel>>():
         state = state.copyWith(
-          loadingStatus: LoadingStatus.success,
-          busStopList: result.data,
+          searchBusStopListLoadingStatus: LoadingStatus.success,
+          searchedBusStopList: result.data,
         );
       case FailureUseCaseResult<List<BusStopModel>>():
         state = state.copyWith(
-          loadingStatus: LoadingStatus.error,
-          busStopList: <BusStopModel>[],
+          searchBusStopListLoadingStatus: LoadingStatus.error,
+          searchedBusStopList: <BusStopModel>[],
         );
     }
   }
