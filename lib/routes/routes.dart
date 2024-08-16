@@ -6,4 +6,10 @@ class Routes {
     name: '/home',
     path: '/home',
   );
+
+  // 알람 등록 페이지
+  static const RouteInfo alarm = RouteInfo(
+    name: '/home/alarm',
+    path: 'alarm',
+  );
 }
