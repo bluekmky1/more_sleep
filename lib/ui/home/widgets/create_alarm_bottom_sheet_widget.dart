@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../routes/routes.dart';
 import '../../../theme/color_theme.dart';
 import '../../../theme/typographies.dart';
+import '../home_state.dart';
+import '../home_view_model.dart';
 
-class CreateAlarmBottomSheetWidget extends StatelessWidget {
+class CreateAlarmBottomSheetWidget extends ConsumerWidget {
   const CreateAlarmBottomSheetWidget({
     required DraggableScrollableController draggableScrollableController,
     super.key,
@@ -14,7 +17,8 @@ class CreateAlarmBottomSheetWidget extends StatelessWidget {
   final DraggableScrollableController _draggableScrollableController;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final HomeState state = ref.watch(homeViewModelProvider);
     final ColorTheme colorTheme = Theme.of(context).extension<ColorTheme>()!;
     return Align(
       alignment: Alignment.bottomCenter,
@@ -45,12 +49,20 @@ class CreateAlarmBottomSheetWidget extends StatelessWidget {
                     child: Row(
                       children: <Widget>[
                         Expanded(
-                            child: Text(
-                          '더포레스트힐',
-                          style: Typographies.hBold24.copyWith(
-                            color: colorTheme.background,
+                            child: SingleChildScrollView(
+                          physics: const ClampingScrollPhysics(),
+                          scrollDirection: Axis.horizontal,
+                          child: Text(
+                            state.selectBusStopModel.stopName,
+                            maxLines: 1,
+                            style: Typographies.hBold20.copyWith(
+                              color: colorTheme.background,
+                            ),
                           ),
                         )),
+                        const SizedBox(
+                          width: 16,
+                        ),
                         CloseButton(
                           color: colorTheme.background,
                           onPressed: () async {
@@ -83,7 +95,7 @@ class CreateAlarmBottomSheetWidget extends StatelessWidget {
                                 child: Center(
                                   child: Text(
                                     '이 정류장에 알림 생성하기',
-                                    style: Typographies.tSemiBold18,
+                                    style: Typographies.tSemiBold16,
                                   ),
                                 ),
                               ),
