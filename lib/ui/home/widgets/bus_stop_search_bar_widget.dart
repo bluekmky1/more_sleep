@@ -38,7 +38,6 @@ class _BusStopSearchBarWidgetState
   @override
   Widget build(BuildContext context) {
     final ColorTheme colorTheme = Theme.of(context).extension<ColorTheme>()!;
-
     final HomeViewModel viewModel = ref.read(homeViewModelProvider.notifier);
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -116,7 +115,7 @@ class _BusStopSearchBarWidgetState
 
           _debounce = Timer(const Duration(milliseconds: 250), () {
             if (_searchController.text.isNotEmpty) {
-              viewModel.getBusStop(keyword: value);
+              viewModel.getBusStopByStopName(keyword: value);
             }
           });
         },
@@ -133,12 +132,16 @@ class _BusStopSearchBarWidgetState
                 child: Text('검색해주세용'),
               );
             }
+
             return ListView.builder(
               padding: EdgeInsets.zero,
               itemBuilder: (BuildContext context, int index) => ListTile(
                 title: Text(options[index].stopName),
-                onTap: () {
-                  context.pop();
+                onTap: () async {
+                  if (context.mounted) {
+                    viewModel.selectBusStop(busStopModel: options[index]);
+                    context.pop();
+                  }
                 },
               ),
               itemCount: options.length,

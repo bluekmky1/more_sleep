@@ -1,14 +1,7 @@
-import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/rendering/sliver.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../domain/bus_stop/model/bus_stop_model.dart';
-import '../../routes/routes.dart';
-import '../../theme/color_theme.dart';
-import '../../theme/typographies.dart';
 import '../common/const/assets.dart';
 import 'home_state.dart';
 import 'home_view_model.dart';
@@ -29,11 +22,14 @@ class HomeView extends ConsumerStatefulWidget {
 class _HomeViewState extends ConsumerState<HomeView> {
   final DraggableScrollableController _draggableScrollableController =
       DraggableScrollableController();
-  late NaverMapController _mapController;
+  NaverMapController? mapController;
 
   @override
   void dispose() {
     _draggableScrollableController.dispose();
+    if (mapController != null) {
+      mapController!.dispose();
+    }
     super.dispose();
   }
 
@@ -41,6 +37,78 @@ class _HomeViewState extends ConsumerState<HomeView> {
   Widget build(BuildContext context) {
     final HomeState state = ref.watch(homeViewModelProvider);
     final HomeViewModel viewModel = ref.read(homeViewModelProvider.notifier);
+
+    ref.listen(
+      homeViewModelProvider
+          .select((HomeState value) => value.selectBusStopModel),
+      (BusStopModel? prev, BusStopModel next) async {
+        // 이전에 선택했던 정류장이 아닐 경우
+        if (prev != next) {
+          await mapController!.updateCamera(
+            NCameraUpdate.scrollAndZoomTo(
+              target: NLatLng(
+                next.lat,
+                next.long,
+              ),
+            ),
+          );
+
+          // 현재 지도에 표시되고 있는 정류장일 경우
+          if (state.diplayedBusStopList.contains(next)) {
+            await _draggableScrollableController.animateTo(
+              1,
+              duration: Durations.short4,
+              curve: Curves.easeInOut,
+            );
+            return;
+          }
+
+          await mapController!.clearOverlays(
+            type: NOverlayType.marker,
+          );
+
+          viewModel.clearDiplayedBusStop();
+
+          final NLatLngBounds bounds = await mapController!.getContentBounds();
+
+          await viewModel.getBusStopByBounds(
+            startLat: bounds.southWest.latitude,
+            startLong: bounds.southWest.longitude,
+            endLat: bounds.northEast.latitude,
+            endLong: bounds.northEast.longitude,
+          );
+
+          final List<BusStopModel> newBusStopList =
+              ref.read(homeViewModelProvider).diplayedBusStopList;
+
+          await mapController!.addOverlayAll(
+            List<NMarker>.generate(
+                newBusStopList.length,
+                (int index) => NMarker(
+                      id: newBusStopList[index].stopId,
+                      position: NLatLng(
+                        newBusStopList[index].lat,
+                        newBusStopList[index].long,
+                      ),
+                      icon: const NOverlayImage.fromAssetImage(Assets.marker),
+                      size: const Size.square(16),
+                      anchor: const NPoint(0.5, 0.9),
+                    )..setOnTapListener((NMarker nMarker) {
+                        viewModel.selectBusStop(
+                            busStopModel: newBusStopList[index]);
+                      })).toSet(),
+          );
+
+          await _draggableScrollableController.animateTo(
+            1,
+            duration: Durations.short4,
+            curve: Curves.easeInOut,
+          );
+        }
+
+        // 이전에 선택했던 정류장일 경우 다른 액션 없음
+      },
+    );
 
     NMarker busStopMarker({
       required BusStopModel busStopModel,
@@ -52,14 +120,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
             busStopModel.long,
           ),
           icon: const NOverlayImage.fromAssetImage(Assets.marker),
-          size: const Size.square(32),
+          size: const Size.square(16),
           anchor: const NPoint(0.5, 0.9),
         )..setOnTapListener((NMarker nMarker) async {
-            await _draggableScrollableController.animateTo(
-              1,
-              duration: Durations.short4,
-              curve: Curves.easeInOut,
-            );
+            viewModel.selectBusStop(busStopModel: busStopModel);
           });
 
     return Scaffold(
@@ -68,19 +132,29 @@ class _HomeViewState extends ConsumerState<HomeView> {
           child: Stack(
             children: <Widget>[
               NaverMap(
-                onMapReady: (NaverMapController controller) {
-                  _mapController = controller;
-                  _mapController.addOverlay(
-                    busStopMarker(
-                      busStopModel: BusStopModel(
-                        stopId: 'asd',
-                        stopName: '더포레스트힐',
-                        cityCode: 12,
-                        cityName: '경기도 안양시',
-                        lat: 37.5664056,
-                        long: 126.9778222,
+                options: const NaverMapViewOptions(minZoom: 12),
+                onMapReady: (NaverMapController controller) async {
+                  mapController = controller;
+                  final NLatLngBounds bounds =
+                      await mapController!.getContentBounds();
+
+                  await viewModel.getBusStopByBounds(
+                    startLat: bounds.southWest.latitude,
+                    startLong: bounds.southWest.longitude,
+                    endLat: bounds.northEast.latitude,
+                    endLong: bounds.northEast.longitude,
+                  );
+
+                  final List<BusStopModel> newBusStopList =
+                      ref.read(homeViewModelProvider).diplayedBusStopList;
+
+                  await mapController!.addOverlayAll(
+                    List<NMarker>.generate(
+                      newBusStopList.length,
+                      (int index) => busStopMarker(
+                        busStopModel: newBusStopList[index],
                       ),
-                    ),
+                    ).toSet(),
                   );
                 },
               ),
@@ -95,12 +169,50 @@ class _HomeViewState extends ConsumerState<HomeView> {
               ),
 
               // 현 위치에서 재검색 버튼
-              const ResearchButtonWidget(),
+              ResearchButtonWidget(
+                onpressed: () async {
+                  if (mapController == null) {
+                    return;
+                  }
+
+                  await mapController!.clearOverlays(
+                    type: NOverlayType.marker,
+                  );
+
+                  viewModel.clearDiplayedBusStop();
+
+                  final NLatLngBounds bounds =
+                      await mapController!.getContentBounds();
+
+                  await viewModel.getBusStopByBounds(
+                    startLat: bounds.southWest.latitude,
+                    startLong: bounds.southWest.longitude,
+                    endLat: bounds.northEast.latitude,
+                    endLong: bounds.northEast.longitude,
+                  );
+
+                  final List<BusStopModel> newBusStopList =
+                      ref.read(homeViewModelProvider).diplayedBusStopList;
+
+                  await mapController!.addOverlayAll(
+                    List<NMarker>.generate(
+                      newBusStopList.length,
+                      (int index) => busStopMarker(
+                        busStopModel: newBusStopList[index],
+                      ),
+                    ).toSet(),
+                  );
+                },
+              ),
 
               // 회전 초기화 버튼
               InitBearingButtonWidget(
                 onpressed: () async {
-                  await _mapController.updateCamera(
+                  if (mapController == null) {
+                    return;
+                  }
+
+                  await mapController!.updateCamera(
                     NCameraUpdate.withParams(
                       bearing: 0,
                     ),
