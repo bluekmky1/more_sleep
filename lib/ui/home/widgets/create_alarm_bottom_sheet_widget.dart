@@ -88,7 +88,11 @@ class CreateAlarmBottomSheetWidget extends ConsumerWidget {
                           Expanded(
                             child: TextButton(
                               onPressed: () {
-                                context.goNamed(Routes.alarm.name);
+                                context.goNamed(Routes.alarm.name,
+                                    pathParameters: <String, String>{
+                                      'busStopId':
+                                          state.selectBusStopModel.stopId
+                                    });
                               },
                               child: const SizedBox(
                                 height: 50,

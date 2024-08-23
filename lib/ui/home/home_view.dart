@@ -42,6 +42,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
       homeViewModelProvider
           .select((HomeState value) => value.selectBusStopModel),
       (BusStopModel? prev, BusStopModel next) async {
+        // 이전에 선택했던 정류장일 경우
         // 이전에 선택했던 정류장이 아닐 경우
         if (prev != next) {
           await mapController!.updateCamera(
@@ -53,7 +54,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
             ),
           );
 
-          // 현재 지도에 표시되고 있는 정류장일 경우
+          // 현재 지도에 표시되고 있는 정류장일 경우 마커 업데이트 미실시
           if (state.diplayedBusStopList.contains(next)) {
             await _draggableScrollableController.animateTo(
               1,
@@ -62,12 +63,11 @@ class _HomeViewState extends ConsumerState<HomeView> {
             );
             return;
           }
+          viewModel.clearDiplayedBusStop();
 
           await mapController!.clearOverlays(
             type: NOverlayType.marker,
           );
-
-          viewModel.clearDiplayedBusStop();
 
           final NLatLngBounds bounds = await mapController!.getContentBounds();
 
@@ -83,20 +83,24 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
           await mapController!.addOverlayAll(
             List<NMarker>.generate(
-                newBusStopList.length,
-                (int index) => NMarker(
-                      id: newBusStopList[index].stopId,
-                      position: NLatLng(
-                        newBusStopList[index].lat,
-                        newBusStopList[index].long,
-                      ),
-                      icon: const NOverlayImage.fromAssetImage(Assets.marker),
-                      size: const Size.square(16),
-                      anchor: const NPoint(0.5, 0.9),
-                    )..setOnTapListener((NMarker nMarker) {
-                        viewModel.selectBusStop(
-                            busStopModel: newBusStopList[index]);
-                      })).toSet(),
+              newBusStopList.length,
+              (int index) => NMarker(
+                id: newBusStopList[index].stopId,
+                position: NLatLng(
+                  newBusStopList[index].lat,
+                  newBusStopList[index].long,
+                ),
+                icon: const NOverlayImage.fromAssetImage(Assets.marker),
+                size: const Size.square(16),
+                anchor: const NPoint(0.5, 0.9),
+              )..setOnTapListener(
+                  (NMarker nMarker) {
+                    viewModel.selectBusStop(
+                      busStopModel: newBusStopList[index],
+                    );
+                  },
+                ),
+            ).toSet(),
           );
 
           await _draggableScrollableController.animateTo(
@@ -105,8 +109,6 @@ class _HomeViewState extends ConsumerState<HomeView> {
             curve: Curves.easeInOut,
           );
         }
-
-        // 이전에 선택했던 정류장일 경우 다른 액션 없음
       },
     );
 
@@ -122,9 +124,16 @@ class _HomeViewState extends ConsumerState<HomeView> {
           icon: const NOverlayImage.fromAssetImage(Assets.marker),
           size: const Size.square(16),
           anchor: const NPoint(0.5, 0.9),
-        )..setOnTapListener((NMarker nMarker) async {
-            viewModel.selectBusStop(busStopModel: busStopModel);
-          });
+        )..setOnTapListener(
+            (NMarker nMarker) async {
+              viewModel.selectBusStop(busStopModel: busStopModel);
+              await _draggableScrollableController.animateTo(
+                1,
+                duration: Durations.short4,
+                curve: Curves.easeInOut,
+              );
+            },
+          );
 
     return Scaffold(
         resizeToAvoidBottomInset: false,
@@ -132,7 +141,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
           child: Stack(
             children: <Widget>[
               NaverMap(
-                options: const NaverMapViewOptions(minZoom: 12),
+                options: const NaverMapViewOptions(
+                  minZoom: 8,
+                ),
                 onMapReady: (NaverMapController controller) async {
                   mapController = controller;
                   final NLatLngBounds bounds =
@@ -174,12 +185,11 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   if (mapController == null) {
                     return;
                   }
+                  viewModel.clearDiplayedBusStop();
 
                   await mapController!.clearOverlays(
                     type: NOverlayType.marker,
                   );
-
-                  viewModel.clearDiplayedBusStop();
 
                   final NLatLngBounds bounds =
                       await mapController!.getContentBounds();
