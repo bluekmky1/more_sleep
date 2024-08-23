@@ -33,8 +33,10 @@ class AppRouter {
                 path: Routes.alarm.path,
                 name: Routes.alarm.name,
                 pageBuilder: (BuildContext context, GoRouterState state) =>
-                    const NoTransitionPage<dynamic>(
-                      child: AlarmView(),
+                    NoTransitionPage<dynamic>(
+                      child: AlarmView(
+                        busStopId: state.pathParameters['busStopId'] ?? '',
+                      ),
                     )),
           ]),
     ],

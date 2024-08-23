@@ -9,7 +9,7 @@ class Routes {
 
   // 알람 등록 페이지
   static const RouteInfo alarm = RouteInfo(
-    name: '/home/alarm',
-    path: 'alarm',
+    name: '/home/alarm/:busStopId',
+    path: 'alarm/:busStopId',
   );
 }
