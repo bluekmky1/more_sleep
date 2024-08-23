@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retrofit/retrofit.dart';
 import '../../service/network/bus_api_service.dart';
+import 'entity/bus_entity.dart';
 import 'entity/bus_stop_entity.dart';
 
 part 'generated/bus_stop_remote_data_source.g.dart';
@@ -25,5 +26,16 @@ abstract class BusStopRemoteDataSource {
     @Query('_type') required String dataType,
     @Query('cityCode') required String cityCode,
     @Query('nodeNm') required String nodeName,
+  });
+
+  // 정류소 별 경유 노선 조회
+  @GET('BusSttnInfoInqireService/getSttnThrghRouteList')
+  Future<BusEntity> getTransitBusByBusStopId({
+    @Query('serviceKey') required String serviceKey,
+    @Query('pageNo') required String pageNumber,
+    @Query('numOfRows') required String numberOfRows,
+    @Query('_type') required String dataType,
+    @Query('cityCode') required String cityCode,
+    @Query('nodeId') required String nodeId,
   });
 }
