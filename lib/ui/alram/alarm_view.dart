@@ -4,9 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../theme/color_theme.dart';
 import '../../theme/typographies.dart';
+import 'alarm_state.dart';
+import 'alarm_view_model.dart';
 
 class AlarmView extends ConsumerStatefulWidget {
-  const AlarmView({super.key});
+  const AlarmView({
+    required this.busStopId,
+    super.key,
+  });
+
+  final String busStopId;
 
   @override
   ConsumerState<AlarmView> createState() => _AlarmViewState();
@@ -14,7 +21,21 @@ class AlarmView extends ConsumerStatefulWidget {
 
 class _AlarmViewState extends ConsumerState<AlarmView> {
   @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(alarmViewModelProvider.notifier)
+          .getBusStopModel(stopId: widget.busStopId);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final AlarmState state = ref.watch(alarmViewModelProvider);
+    final AlarmViewModel viewModel = ref.read(alarmViewModelProvider.notifier);
+
     final ColorTheme colorTheme = Theme.of(context).extension<ColorTheme>()!;
     return Scaffold(
       appBar: AppBar(
@@ -65,14 +86,14 @@ class _AlarmViewState extends ConsumerState<AlarmView> {
                               borderRadius: BorderRadius.circular(16)),
                           padding: const EdgeInsets.all(16),
                           height: 160,
-                          child: const Column(
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Text('정류장'),
+                              const Text('정류장'),
                               Expanded(
                                 child: Center(
                                   child: Text(
-                                    '더포레스트힐',
+                                    state.busStopModel.stopName,
                                     style: Typographies.hBold24,
                                   ),
                                 ),
