@@ -40,9 +40,7 @@ Map<String, dynamic> _$BusResponseHeaderToJson(BusResponseHeader instance) =>
 
 BusResponseBody _$BusResponseBodyFromJson(Map<String, dynamic> json) =>
     BusResponseBody(
-      items: json['items'] == null
-          ? null
-          : BusBodyItems.fromJson(json['items'] as Map<String, dynamic>),
+      items: const BusBodyItemsConverter().fromJson(json['items']),
       numOfRows: (json['numOfRows'] as num).toInt(),
       pageNo: (json['pageNo'] as num).toInt(),
       totalCount: (json['totalCount'] as num).toInt(),
@@ -50,24 +48,26 @@ BusResponseBody _$BusResponseBodyFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$BusResponseBodyToJson(BusResponseBody instance) =>
     <String, dynamic>{
-      'items': instance.items,
+      'items': const BusBodyItemsConverter().toJson(instance.items),
       'numOfRows': instance.numOfRows,
       'pageNo': instance.pageNo,
       'totalCount': instance.totalCount,
     };
 
 BusBodyItems _$BusBodyItemsFromJson(Map<String, dynamic> json) => BusBodyItems(
-      item: BusBodyItem.fromJson(json['item'] as Map<String, dynamic>),
+      item: (json['item'] as List<dynamic>)
+          .map(const BusBodyItemConverter().fromJson)
+          .toList(),
     );
 
 Map<String, dynamic> _$BusBodyItemsToJson(BusBodyItems instance) =>
     <String, dynamic>{
-      'item': instance.item,
+      'item': instance.item.map(const BusBodyItemConverter().toJson).toList(),
     };
 
 BusBodyItem _$BusBodyItemFromJson(Map<String, dynamic> json) => BusBodyItem(
       endNodeName: json['endnodenm'] as String,
-      routeid: json['nodenm'] as String,
+      routeid: json['routeid'] as String,
       routeNumber: json['routeno'] as String,
       routeType: json['routetp'] as String,
       startNodeName: json['startnodenm'] as String,
@@ -76,7 +76,7 @@ BusBodyItem _$BusBodyItemFromJson(Map<String, dynamic> json) => BusBodyItem(
 Map<String, dynamic> _$BusBodyItemToJson(BusBodyItem instance) =>
     <String, dynamic>{
       'endnodenm': instance.endNodeName,
-      'nodenm': instance.routeid,
+      'routeid': instance.routeid,
       'routeno': instance.routeNumber,
       'routetp': instance.routeType,
       'startnodenm': instance.startNodeName,

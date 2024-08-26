@@ -1,5 +1,8 @@
 import 'package:json_annotation/json_annotation.dart';
 
+import '../converter/bus_item_converter.dart';
+import '../converter/bus_items_converter.dart';
+
 part 'generated/bus_entity.g.dart';
 
 @JsonSerializable()
@@ -45,6 +48,7 @@ class BusResponseBody {
     required this.totalCount,
   });
 
+  @BusBodyItemsConverter()
   final BusBodyItems items;
   final int numOfRows;
   final int pageNo;
@@ -59,6 +63,8 @@ class BusBodyItems {
   BusBodyItems({
     required this.item,
   });
+
+  @BusBodyItemConverter()
   final List<BusBodyItem> item;
 
   factory BusBodyItems.fromJson(Map<String, dynamic> json) =>
@@ -77,7 +83,7 @@ class BusBodyItem {
 
   @JsonKey(name: 'endnodenm')
   final String endNodeName;
-  @JsonKey(name: 'nodenm')
+  @JsonKey(name: 'routeid')
   final String routeid;
   @JsonKey(name: 'routeno')
   final String routeNumber;
