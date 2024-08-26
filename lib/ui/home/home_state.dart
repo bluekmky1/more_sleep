@@ -23,7 +23,7 @@ class HomeState extends Equatable {
         searchedBusStopList = <BusStopModel>[],
         getBusStopListLoadingStatus = LoadingStatus.none,
         diplayedBusStopList = <BusStopModel>[],
-        selectBusStopModel = BusStopModel.init();
+        selectBusStopModel = const BusStopModel.init();
 
   HomeState copyWith({
     LoadingStatus? searchBusStopListLoadingStatus,
