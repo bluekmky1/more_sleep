@@ -11,24 +11,39 @@ class AlarmState extends Equatable {
 
   final List<BusModel> transitBusList;
 
+  final List<BusModel> selectedBusList;
+
+  final String selectedAlarmType;
+
+  final bool isAm;
+
   const AlarmState({
     required this.getBusStopModelLoadingStatus,
     required this.getTransitBusListLoadingStatus,
     required this.busStopModel,
     required this.transitBusList,
+    required this.selectedBusList,
+    required this.selectedAlarmType,
+    required this.isAm,
   });
 
   AlarmState.init()
       : getBusStopModelLoadingStatus = LoadingStatus.none,
         getTransitBusListLoadingStatus = LoadingStatus.none,
         busStopModel = const BusStopModel.init(),
-        transitBusList = <BusModel>[];
+        transitBusList = <BusModel>[],
+        selectedBusList = <BusModel>[],
+        selectedAlarmType = '',
+        isAm = true;
 
   AlarmState copyWith({
     LoadingStatus? getBusStopModelLoadingStatus,
     LoadingStatus? getTransitBusListLoadingStatus,
     BusStopModel? busStopModel,
     List<BusModel>? transitBusList,
+    List<BusModel>? selectedBusList,
+    String? selectedAlarmType,
+    bool? isAm,
   }) =>
       AlarmState(
         getBusStopModelLoadingStatus:
@@ -37,6 +52,9 @@ class AlarmState extends Equatable {
             this.getTransitBusListLoadingStatus,
         busStopModel: busStopModel ?? this.busStopModel,
         transitBusList: transitBusList ?? this.transitBusList,
+        selectedBusList: selectedBusList ?? this.selectedBusList,
+        selectedAlarmType: selectedAlarmType ?? this.selectedAlarmType,
+        isAm: isAm ?? this.isAm,
       );
 
   @override
@@ -45,5 +63,8 @@ class AlarmState extends Equatable {
         getTransitBusListLoadingStatus,
         busStopModel,
         transitBusList,
+        selectedBusList,
+        selectedAlarmType,
+        isAm,
       ];
 }

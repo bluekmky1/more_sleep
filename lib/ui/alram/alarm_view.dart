@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:go_router/go_router.dart';
+import '../../domain/bus_stop/model/bus_stop_model.dart';
 import '../../theme/color_theme.dart';
 import '../../theme/typographies.dart';
 import 'alarm_state.dart';
@@ -24,10 +25,18 @@ class _AlarmViewState extends ConsumerState<AlarmView> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref
           .read(alarmViewModelProvider.notifier)
           .getBusStopModel(stopId: widget.busStopId);
+
+      final BusStopModel busStopModel =
+          ref.read(alarmViewModelProvider).busStopModel;
+
+      await ref.read(alarmViewModelProvider.notifier).getTransitBusByBusStopId(
+            stopId: busStopModel.stopId,
+            cityCode: busStopModel.cityCode.toString(),
+          );
     });
   }
 
@@ -52,7 +61,9 @@ class _AlarmViewState extends ConsumerState<AlarmView> {
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  context.pop();
+                },
                 child: const Text('취소'),
               ),
             ),
@@ -114,20 +125,39 @@ class _AlarmViewState extends ConsumerState<AlarmView> {
                           decoration: BoxDecoration(
                               color: colorTheme.surface75,
                               borderRadius: BorderRadius.circular(16)),
-                          padding: const EdgeInsets.all(16),
-                          height: 160,
-                          child: const Column(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          height: 250,
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Text('노선'),
-                              Expanded(
-                                child: Center(
-                                  child: Text(
-                                    '7',
-                                    style: Typographies.hBold24,
-                                  ),
-                                ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 16),
+                                child: Text('감지 하고 싶은 버스 노선'),
                               ),
+                              Expanded(
+                                  child: ListView.builder(
+                                itemBuilder: (BuildContext context,
+                                        int index) =>
+                                    ListTile(
+                                        onTap: () {
+                                          viewModel.selectBus(
+                                              bus: state.transitBusList[index]);
+                                        },
+                                        title: Text(state
+                                            .transitBusList[index].busNumber),
+                                        leading: Checkbox(
+                                          materialTapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                          onChanged: (bool? value) {
+                                            viewModel.selectBus(
+                                                bus: state
+                                                    .transitBusList[index]);
+                                          },
+                                          value: state.selectedBusList.contains(
+                                              state.transitBusList[index]),
+                                        )),
+                                itemCount: state.transitBusList.length,
+                              )),
                             ],
                           ),
                         ),
@@ -238,32 +268,126 @@ class _AlarmViewState extends ConsumerState<AlarmView> {
                                       Column(
                                         children: <Widget>[
                                           TextButton(
-                                              style: TextButton.styleFrom(
-                                                tapTargetSize:
-                                                    MaterialTapTargetSize
-                                                        .shrinkWrap,
+                                            style: TextButton.styleFrom(
+                                              tapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
+                                              backgroundColor: state.isAm
+                                                  ? Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                  : colorTheme.surface75,
+                                            ),
+                                            onPressed: () {
+                                              viewModel.selectAmPm(
+                                                amPm: 'am',
+                                              );
+                                            },
+                                            child: Text(
+                                              '오전',
+                                              style: TextStyle(
+                                                color: !state.isAm
+                                                    ? Theme.of(context)
+                                                        .colorScheme
+                                                        .primary
+                                                    : colorTheme.background,
                                               ),
-                                              onPressed: () {},
-                                              child: const Text('오전')),
+                                            ),
+                                          ),
                                           TextButton(
-                                              style: TextButton.styleFrom(
-                                                tapTargetSize:
-                                                    MaterialTapTargetSize
-                                                        .shrinkWrap,
+                                            style: TextButton.styleFrom(
+                                              tapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
+                                              backgroundColor: !state.isAm
+                                                  ? Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                  : colorTheme.surface75,
+                                            ),
+                                            onPressed: () {
+                                              viewModel.selectAmPm(
+                                                amPm: 'pm',
+                                              );
+                                            },
+                                            child: Text(
+                                              '오후',
+                                              style: TextStyle(
+                                                color: state.isAm
+                                                    ? Theme.of(context)
+                                                        .colorScheme
+                                                        .primary
+                                                    : colorTheme.background,
                                               ),
-                                              onPressed: () {},
-                                              child: const Text('오후'))
+                                            ),
+                                          )
                                         ],
                                       )
                                     ],
                                   ),
                                 ),
-                              )
+                              ),
                             ],
                           ),
                         ),
                       ),
                     ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Container(
+                    decoration: BoxDecoration(
+                        color: colorTheme.surface75,
+                        borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    height: 165 + 47,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text('알림 종류'),
+                        ),
+                        Expanded(
+                            child: Column(
+                          children: <Widget>[
+                            ListTile(
+                              onTap: () {
+                                viewModel.selectAlarmType(alarmType: '알람');
+                              },
+                              leading: Checkbox(
+                                value: state.selectedAlarmType == '알람',
+                                onChanged: (bool? value) {
+                                  viewModel.selectAlarmType(alarmType: '알람');
+                                },
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              title: const Text('알람'),
+                            ),
+                            ListTile(
+                              onTap: () {
+                                viewModel.selectAlarmType(alarmType: '푸쉬 알림');
+                              },
+                              leading: Checkbox(
+                                value: state.selectedAlarmType == '푸쉬 알림',
+                                onChanged: (bool? value) {
+                                  viewModel.selectAlarmType(alarmType: '푸쉬 알림');
+                                },
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              title: const Text('푸쉬 알림'),
+                            ),
+                            TextButton(
+                              onPressed: () {},
+                              child: const Text('AlarmManager'),
+                            ),
+                          ],
+                        ))
+                      ],
+                    ),
                   ),
                 ),
               ],

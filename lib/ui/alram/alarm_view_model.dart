@@ -64,4 +64,26 @@ class AlarmViewModel extends StateNotifier<AlarmState> {
         );
     }
   }
+
+  // 노선 선택/취소
+  void selectBus({required BusModel bus}) {
+    final List<BusModel> newSelectedBusList = state.selectedBusList;
+    if (state.selectedBusList.contains(bus)) {
+      newSelectedBusList.remove(bus);
+      state = state.copyWith(selectedBusList: newSelectedBusList);
+    } else {
+      newSelectedBusList.add(bus);
+      state = state.copyWith(selectedBusList: newSelectedBusList);
+    }
+  }
+
+  // 알림 형태 선택
+  void selectAlarmType({required String alarmType}) {
+    state = state.copyWith(selectedAlarmType: alarmType);
+  }
+
+  // 오전 오후 선택
+  void selectAmPm({required String amPm}) {
+    state = state.copyWith(isAm: amPm == 'am');
+  }
 }
