@@ -48,8 +48,9 @@ Map<String, dynamic> _$BusArrivalResponseHeaderToJson(
 
 BusArrivalBody _$BusArrivalBodyFromJson(Map<String, dynamic> json) =>
     BusArrivalBody(
-      items: _$JsonConverterFromJson<String, BusArrivalBodyItems?>(
-          json['items'], const BusArrivalBodyItemsConverter().fromJson),
+      items: json['items'] == null
+          ? null
+          : BusArrivalBodyItems.fromJson(json['items'] as Map<String, dynamic>),
       numOfRows: (json['numOfRows'] as num).toInt(),
       pageNo: (json['pageNo'] as num).toInt(),
       totalCount: (json['totalCount'] as num).toInt(),
@@ -57,17 +58,11 @@ BusArrivalBody _$BusArrivalBodyFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$BusArrivalBodyToJson(BusArrivalBody instance) =>
     <String, dynamic>{
-      'items': const BusArrivalBodyItemsConverter().toJson(instance.items),
+      'items': instance.items,
       'numOfRows': instance.numOfRows,
       'pageNo': instance.pageNo,
       'totalCount': instance.totalCount,
     };
-
-Value? _$JsonConverterFromJson<Json, Value>(
-  Object? json,
-  Value? Function(Json json) fromJson,
-) =>
-    json == null ? null : fromJson(json as Json);
 
 BusArrivalBodyItems _$BusArrivalBodyItemsFromJson(Map<String, dynamic> json) =>
     BusArrivalBodyItems(

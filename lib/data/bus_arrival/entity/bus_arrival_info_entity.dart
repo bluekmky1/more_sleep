@@ -1,7 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
 
-import '../converter/bus_arrival_body_items_convervter.dart';
-
 part 'generated/bus_arrival_info_entity.g.dart';
 
 @JsonSerializable()
@@ -47,7 +45,6 @@ class BusArrivalBody {
     required this.totalCount,
   });
 
-  @BusArrivalBodyItemsConverter()
   final BusArrivalBodyItems? items;
   final int numOfRows;
   final int pageNo;
