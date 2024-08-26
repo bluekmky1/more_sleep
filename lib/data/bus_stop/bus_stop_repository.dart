@@ -53,12 +53,13 @@ class BusStopRepository extends Repository {
     try {
       return SuccessRepositoryResult<BusEntity>(
         data: await _busStopRemoteDataSource.getTransitBusByBusStopId(
-            serviceKey: Env.openDataPortalServiceKey,
-            pageNumber: '1',
-            numberOfRows: '10',
-            dataType: 'json',
-            cityCode: cityCode,
-            nodeId: nodeId),
+          serviceKey: Env.openDataPortalServiceKey,
+          pageNumber: '1',
+          numberOfRows: '10',
+          dataType: 'json',
+          cityCode: cityCode,
+          nodeId: nodeId,
+        ),
       );
     } on DioException catch (e) {
       final int? statusCode = e.response?.statusCode;
@@ -66,7 +67,7 @@ class BusStopRepository extends Repository {
       return switch (statusCode) {
         _ => FailureRepositoryResult<BusEntity>(
             error: e,
-            messages: <String>['1대1 문의 답변 작성에 실패했습니다.'],
+            messages: <String>['정류소 별 경유 노선 목록 조회에 실패했습니다.'],
           ),
       };
     }
